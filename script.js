@@ -8,7 +8,7 @@ const prevFilterBtn = document.getElementById("prevFilter");
 const nextFilterBtn = document.getElementById("nextFilter");
 
 const shutterSound = new Audio("shutter.mp3");
-const countdownSound = new Audio("countdown.mp3");
+const countdownSound = new Audio("countdown-[AudioTrimmer.com].mp3");
 
 let capturedPhotos = [];
 let capturedCount = 0;
@@ -22,7 +22,16 @@ const filters = [
     { name: "Blur", css: "blur(1px)" },
     { name: "Brightness", css: "brightness(1.5)" },
     { name: "Contrast", css: "contrast(1.5)" },
+    { name: "Vintage", css: "sepia(0.6) contrast(0.8) brightness(1.2) saturate(0.7)" },
+    { name: "Warm", css: "sepia(0.3) brightness(1.2) contrast(1.1) saturate(1.3)" },
+    { name: "Cool", css: "hue-rotate(180deg) contrast(1.2) brightness(1.1)" },
+    { name: "Muted", css: "saturate(0.5) brightness(0.9) contrast(0.9)" },
+    { name: "Dramatic", css: "contrast(1.8) brightness(0.8) saturate(1.2)" },
+    { name: "Retro", css: "sepia(0.5) hue-rotate(-15deg) contrast(0.9) brightness(1.1)" },
+    { name: "Soft Glow", css: "brightness(1.2) blur(2px) saturate(1.1)" },
+    { name: "Cyberpunk", css: "contrast(1.5) hue-rotate(200deg) brightness(1.3) saturate(1.4)" }
 ];
+
 
 // Menentukan apakah perangkat adalah mobile
 const isMobile = window.innerWidth <= 600;
@@ -42,12 +51,6 @@ navigator.mediaDevices.getUserMedia(videoConstraints)
     .catch(err => console.error("Camera access denied", err));
 
 // Fungsi untuk mengganti filter saat tombol prev/next ditekan
-function changeFilter(direction) {
-    currentFilterIndex = (currentFilterIndex + direction + filters.length) % filters.length;
-    filterNameEl.textContent = filters[currentFilterIndex].name;
-    video.style.filter = filters[currentFilterIndex].css;
-}
-
 function changeFilter(direction) {
     currentFilterIndex = (currentFilterIndex + direction + filters.length) % filters.length;
     filterNameEl.textContent = filters[currentFilterIndex].name;
@@ -81,7 +84,23 @@ function capturePhotoWithCountdown() {
         return;
     }
 
-    let timeLeft = 3; // Countdown 3 detik
+    // Simpan timestamp hanya untuk foto pertama
+    if (capturedCount === 0) {
+        const now = new Date();
+        const formattedTime = now.toLocaleString("id-ID", {
+            year: "numeric",
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false, // Nonaktifkan format 12 jam
+        });
+    
+        sessionStorage.setItem("photoTimestamp", formattedTime);
+        console.log("Waktu tersimpan:", formattedTime); // Debugging
+    }
+
+    let timeLeft = 3;
     countdownEl.textContent = `Taking photo in ${timeLeft}...`;
     counterEl.textContent = `${capturedCount}/4`;
     countdownSound.play();
@@ -114,6 +133,10 @@ function capturePhoto() {
     ctx.filter = filters[currentFilterIndex].css;
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+    // Mainkan suara shutter
+    shutterSound.currentTime = 0; // Reset audio ke awal
+    shutterSound.play().catch(err => console.error("Error playing shutter sound:", err));
+
     const photoData = canvas.toDataURL("image/png");
     capturedPhotos.push(photoData);
     capturedCount++;
@@ -126,6 +149,7 @@ function capturePhoto() {
 
     setTimeout(capturePhotoWithCountdown, 1000);
 }
+
 
 // Redirect ke halaman download
 function redirectToDownload() {

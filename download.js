@@ -3,6 +3,7 @@ const ctx = finalCanvas.getContext("2d");
 const downloadBtn = document.getElementById("download-btn");
 const colorButtons = document.querySelectorAll(".color-btn");
 
+
 let selectedFrameColor = "img/nude.png"; // Default frame
 
 let capturedPhotos = JSON.parse(sessionStorage.getItem("capturedPhotos")) || [];
@@ -52,19 +53,27 @@ function drawCollage() {
 
 // Function to draw the logo
 function drawLogo() {
-    const logo = new Image();
-    logo.src = "img/Tambahkan_subjudul__2_-removebg-preview.png";
+    const logoY = finalCanvas.height - logoSpace + 35;
 
-    logo.onload = () => {
-        const logoWidth = 80;
-        const logoHeight = 20;
-        const logoX = (canvasWidth - logoWidth) / 2;
-        const logoY = finalCanvas.height - logoSpace + 35;
-        ctx.drawImage(logo, logoX, logoY, logoWidth, logoHeight);
-    };
+    // Cek apakah warna background gelap
+    const isDarkBackground = selectedFrameColor.includes("black") || selectedFrameColor.includes("dark");
 
-    logo.onerror = () => console.error("Failed to load logo image.");
+    // Tentukan warna teks berdasarkan warna frame
+    const textColor = isDarkBackground ? "#FFF" : "#000"; // Putih jika background gelap, hitam jika terang
+
+    // Gambar teks sebagai logo
+    ctx.font = "18px Arial";
+    ctx.fillStyle = textColor;
+    ctx.textAlign = "center";
+    ctx.fillText("eBooth.js", canvasWidth / 2, logoY);
+
+    // Tambahkan Timestamp di bawah logo
+    const timestamp = sessionStorage.getItem("photoTimestamp") || "Unknown Time";
+    ctx.font = "15px Arial";
+    ctx.fillStyle = textColor;
+    ctx.fillText(timestamp, canvasWidth / 2, logoY + 20);
 }
+
 
 // Change frame color and redraw instantly
 colorButtons.forEach(button => {
